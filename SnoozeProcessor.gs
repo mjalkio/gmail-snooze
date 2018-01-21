@@ -18,18 +18,19 @@ function processSnoozes() {
 }
 
 function moveSnoozes(settings) {
-  var oldLabel,
-  newLabel,
-  page;
-  for (var i = 1; i <= settings.maxSnoozeDays; i++) {
+  var snoozeDay = 1;
+  var newLabel = null;
+  var oldLabel = null;
+
+  while (oldLabel !== null || snoozeDay == 1) {
     newLabel = oldLabel;
     oldLabel = GmailApp.getUserLabelByName(getChildSnoozedLabelName(settings, i));
-    page = null;
+    var page = null;
     // Get threads in "pages" of 100 at a time
-    while (!page || page.length == 100) {
+    while (page === null || page.length == 100) {
       page = oldLabel.getThreads(0, 100);
       if (page.length > 0) {
-        if (newLabel) {
+        if (newLabel !== null) {
           // Move the threads into "today’s" label
           newLabel.addToThreads(page);
         } else {
@@ -39,14 +40,16 @@ function moveSnoozes(settings) {
             GmailApp.markThreadsUnread(page);
           }
           if (settings.markWithUnsnoozeLabelAfterSnoozeExpires) {
-            GmailApp.getUserLabelByName(settings.unSnoozedLabelName)
-            .addToThreads(page);
+            GmailApp.getUserLabelByName(
+              settings.unSnoozedLabelName).addToThreads(page);
           }
         }
         // Move the threads out of "yesterday’s" label
         oldLabel.removeFromThreads(page);
       }
     }
+
+    snoozeDay += 1;
   }
 }
 
