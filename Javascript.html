@@ -1,0 +1,118 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+    $(function () {
+        // Load the settings and display them on the page
+        google.script.run
+        .withSuccessHandler(function (settings) {
+            populateSettingsFields(settings);
+            var now = new Date();
+            if (settings.nextRatingPromptDate == null || settings.nextRatingPromptDate <= now) {
+              // Time to annoy them with a modal
+              $('#modalContainer').show();
+            }
+            showAlertMessage('Settings loaded successfully', false, 2000);
+        }).withFailureHandler(function (err) {
+            showAlertMessage('Error loading settings: \"' + err + '.\" Please wait a moment, refresh your browser, and try again', true, -1);
+        }).getOrCreateSettings();
+
+        // Attach an event to the rate link
+        $('#rateLink').click(function() {
+          $('#modalContainer').show();
+        });
+
+        // Attach an event to the rate now button
+        $('#btnRateNow').click(function() {
+          window.open('https://chrome.google.com/webstore/detail/gmail-snooze/alpijhhgggjdfchmlhofhifceddjdlaf/reviews', '_blank');
+          google.script.run
+          .withSuccessHandler(function() {
+            showAlertMessage('Thanks!', false, 5000);
+            $('#modalContainer').hide();
+          })
+          .setNextRatingPromptDate(-1);
+        });
+
+        // Attach an event to the rate later button
+        $('#btnRateLater').click(function() {
+          google.script.run
+          .withSuccessHandler(function() {
+            showAlertMessage('Maybe later? OK, sure.', false, 5000);
+            $('#modalContainer').hide();
+          })
+          .setNextRatingPromptDate(7);
+        });
+
+        // Attach an event to the rate never button
+        $('#btnRateNever').click(function() {
+          google.script.run
+          .withSuccessHandler(function() {
+            showAlertMessage('Ouch, that really hurt', false, 5000);
+            $('#modalContainer').hide();
+          })
+          .setNextRatingPromptDate(-1);
+        });
+
+        // Attach an event to the unintall button
+        $('#btnUninstall').click(function() {
+          if (confirm('Are you sure you want to completelty uninstall Gmail Snooze from your account?')) {
+            window.location.href = "https://script.google.com/macros/s/AKfycbx5m89oeZFHSVNi2R-wmFJdFTko4uaFtQVXMOnmqwmd61JcOVE/manage/uninstall";
+          }
+        });
+
+        // Attach an event to the save button
+        $('#btnSave').click(function () {
+            showAlertMessage('Saving settings and setting up labels. This may take a few minutes. Please wait...', true, -1);
+            google.script.run
+            .withSuccessHandler(function (settings) {
+                populateSettingsFields(settings);
+                showAlertMessage('Settings saved successfully', false, 2000);
+            })
+            .withFailureHandler(function (err) {
+                showAlertMessage('Error saving settings: \"' + err + '.\" Please fix any errors and try again.', true, -1);
+            })
+            .validateAndSetSettings(parseFromSettingsFields());
+        });
+    });
+
+    function parseFromSettingsFields() {
+        return {
+            appEnabled : $('#appEnabled').prop('checked'),
+            processSnoozeTime12Hour : $('#processSnoozeTime12Hour').val(),
+            processSnoozeTimeMinute : $('#processSnoozeTimeMinute').val(),
+            processSnoozeTimeAmPm : $('#processSnoozeTimeAmPm').val(),
+            maxSnoozeDays : $('#maxSnoozeDays').val(),
+            snoozedParentLabelName : $('#snoozedParentLabelName').val(),
+            markUnreadAfterSnoozeExpires : $('#markUnreadAfterSnoozeExpires').prop('checked'),
+            markWithUnsnoozeLabelAfterSnoozeExpires : $('#markWithUnsnoozeLabelAfterSnoozeExpires').prop('checked'),
+            unSnoozedLabelName : $('#unSnoozedLabelName').val()
+        };
+    }
+
+    function populateSettingsFields(settings) {
+        $('#debugLog').text(JSON.stringify(settings));
+
+        $('#appEnabled').prop('checked', settings.appEnabled);
+        $('#processSnoozeTime12Hour').val(settings.processSnoozeTime12Hour);
+        $('#processSnoozeTimeMinute').val(pad(settings.processSnoozeTimeMinute, 2));
+        $('#processSnoozeTimeAmPm').val(settings.processSnoozeTimeAmPm);
+        $('#maxSnoozeDays').val(settings.maxSnoozeDays);
+        $('#snoozedParentLabelName').val(settings.snoozedParentLabelName);
+        $('#markUnreadAfterSnoozeExpires').prop('checked', settings.markUnreadAfterSnoozeExpires);
+        $('#markWithUnsnoozeLabelAfterSnoozeExpires').prop('checked', settings.markWithUnsnoozeLabelAfterSnoozeExpires);
+        $('#unSnoozedLabelName').val(settings.unSnoozedLabelName);
+    }
+
+    function showAlertMessage(text, keepAlive, aliveTime) {
+        var alertBox = $('#plsWaitAlert');
+        alertBox.text(text);
+        alertBox.fadeTo(400, 1);
+        if (!keepAlive) {
+          alertBox.delay(aliveTime).fadeTo(1000, 0);
+        }
+    }
+
+    function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
+</script>
