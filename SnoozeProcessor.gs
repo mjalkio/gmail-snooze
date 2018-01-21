@@ -1,23 +1,19 @@
-function getSettings() {
-  // Hard-code the settings that I want
-  return {
-    snoozedParentLabelName : 'Snoozed',
-    markUnreadAfterSnoozeExpires : true,
-    markWithUnsnoozeLabelAfterSnoozeExpires : false,
-    unSnoozedLabelName : 'Unsnoozed'
-  };
-}
+const settings = {
+  snoozedParentLabelName : 'Snoozed',
+  markUnreadAfterSnoozeExpires : true,
+  markWithUnsnoozeLabelAfterSnoozeExpires : false,
+  unSnoozedLabelName : 'Unsnoozed'
+};
 
 function processSnoozes() {
   try {
-    var settings = getSettings();
-    moveSnoozes(settings);
+    moveSnoozes();
   } catch (err) {
     throw 'Error processing today\'s snoozes: ' + err;
   }
 }
 
-function moveSnoozes(settings) {
+function moveSnoozes() {
   var snoozeDay = 1;
   var newLabel = null;
   var oldLabel = null;
@@ -53,7 +49,8 @@ function moveSnoozes(settings) {
   }
 }
 
-function getChildSnoozedLabelName(settings, index) {
+function getChildSnoozedLabelName(index) {
+  // Will not work if we snooze for over 99 days!
   return settings.snoozedParentLabelName + '/'
    + pad(index, 2)
    + ' day'
