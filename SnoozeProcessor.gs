@@ -1,4 +1,4 @@
-const settings = {
+var settings = {
   snoozedParentLabelName : 'Snoozed',
   markUnreadAfterSnoozeExpires : true,
   markWithUnsnoozeLabelAfterSnoozeExpires : false,
@@ -20,7 +20,13 @@ function moveSnoozes() {
 
   while (oldLabel !== null || snoozeDay == 1) {
     newLabel = oldLabel;
-    oldLabel = GmailApp.getUserLabelByName(getChildSnoozedLabelName(settings, i));
+    oldLabel = GmailApp.getUserLabelByName(getChildSnoozedLabelName(snoozeDay));
+    snoozeDay += 1;
+
+    if (oldLabel === null) {
+      continue;  // No label, we're done!
+    }
+
     var page = null;
     // Get threads in "pages" of 100 at a time
     while (page === null || page.length == 100) {
@@ -44,8 +50,6 @@ function moveSnoozes() {
         oldLabel.removeFromThreads(page);
       }
     }
-
-    snoozeDay += 1;
   }
 }
 
