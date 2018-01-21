@@ -11,50 +11,9 @@ function getSettings() {
 function processSnoozes() {
   try {
     var settings = getSettings();
-    if (settings != null) {
-      setupLabelsIfNeeded(settings);
-      moveSnoozes(settings);
-    }
+    moveSnoozes(settings);
   } catch (err) {
     throw 'Error processing today\'s snoozes: ' + err;
-  }
-}
-
-function setupLabelsIfNeeded(settings) {
-  // Create the unsnoozed label if necessary
-  if (settings.markWithUnsnoozeLabelAfterSnoozeExpires) {
-    if (GmailApp.getUserLabelByName(settings.unSnoozedLabelName) === null) {
-      Logger.log('Creating label ' + settings.unSnoozedLabelName);
-      GmailApp.createLabel(settings.unSnoozedLabelName);
-    }
-  }
-
-  // Create the parent snoozed label if necessary
-  var snoozedParentLabel = GmailApp.getUserLabelByName(settings.snoozedParentLabelName);
-  if (snoozedParentLabel === null) {
-    Logger.log('Creating label ' + settings.snoozedParentLabelName);
-    GmailApp.createLabel(settings.snoozedParentLabelName);
-  }
-
-  // Create/delete obsolete child snoozed labels if necessary
-  for (var i = 1; i <= 99; i++) {
-    var thisChildSnoozedLabelName = getChildSnoozedLabelName(settings, i);
-    var thisChildSnoozedLabel = GmailApp.getUserLabelByName(thisChildSnoozedLabelName);
-    var labelShouldExist = i <= settings.maxSnoozeDays;
-    if (thisChildSnoozedLabel === null) {
-      if (labelShouldExist) {
-        Logger.log('Creating label ' + thisChildSnoozedLabelName);
-        GmailApp.createLabel(thisChildSnoozedLabelName);
-      } else {
-        // label doesn't exist (and that's good, so stop here)
-        break;
-      }
-    } else {
-      if (!labelShouldExist) {
-        Logger.log('Deleting obsolete label ' + thisChildSnoozedLabelName);
-        GmailApp.deleteLabel(thisChildSnoozedLabel);
-      }
-    }
   }
 }
 
