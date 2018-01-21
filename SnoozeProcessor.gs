@@ -1,3 +1,13 @@
+function getSettings() {
+  // Hard-code the settings that I want
+  return {
+    snoozedParentLabelName : 'Snoozed',
+    markUnreadAfterSnoozeExpires : true,
+    markWithUnsnoozeLabelAfterSnoozeExpires : false,
+    unSnoozedLabelName : 'Unsnoozed'
+  };
+}
+
 function processSnoozes() {
   try {
     var settings = getSettings();
